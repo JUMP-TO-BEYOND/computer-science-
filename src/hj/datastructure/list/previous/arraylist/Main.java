@@ -1,12 +1,12 @@
 package hj.datastructure.list.previous.arraylist;
 
 
-import java.util.List;
+import hj.datastructure.list.previous.List;
 
 public class Main {
 
     public static void main(String[] args) {
-       List<String> list = new java.util.ArrayList<String>();
+       List<String> list = new ArrayList<String>();
 
         list.add("first");
         list.add("second");
@@ -17,7 +17,7 @@ public class Main {
 
         System.out.println(list.get(1));
 
-        src.List.List test = new ArrayList();
+        List test = new ArrayList();
 
         test.add("first");
         test.add("second");

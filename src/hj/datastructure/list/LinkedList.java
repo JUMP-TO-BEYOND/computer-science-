@@ -2,8 +2,8 @@ package hj.datastructure.list;
 
 import java.util.Comparator;
 
-public class LinkedList<E> {
-    class Node<E>{
+public class LinkedList<E> implements List<E> {
+    private static class Node<E>{
         E data;          // 값 value
         Node<E> next;    // 다음 노드를 가리키는 포인터
 
@@ -51,7 +51,7 @@ public class LinkedList<E> {
 
     public void removeFirst(){
         if(head != null){
-            head = selectedNode = head.next;
+            head = head.next;
         }
     }
 
@@ -74,7 +74,7 @@ public class LinkedList<E> {
     }
 
     public void remove(Node p){
-        if(head == null) return;
+        if(head == null) return; // 비어있는 것을 알려줘야 됨..(exception 처리 필요)
 
         // 삭제할 노드가 머리 노드인 경우
         if(head == p) {
@@ -96,10 +96,11 @@ public class LinkedList<E> {
     }
 
     public void clear(){
-        while(head != null){
+        head = null;
+        /*while(head != null){
             removeFirst();
         }
-        selectedNode = null; // 이거 필요한가?
+        selectedNode = null; // 이거 필요한가?*/
     }
 
 }

@@ -1,6 +1,6 @@
 package hj.datastructure.list.previous.linkedlist;
 
-import src.List.List;
+import hj.datastructure.list.previous.List;
 
 public class Main {
 
