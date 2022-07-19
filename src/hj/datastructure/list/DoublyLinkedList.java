@@ -5,8 +5,6 @@ import ys.datastructure.list.indexException;
 import java.util.*;
 import java.util.List;
 
-import static org.graalvm.compiler.graph.Edges.getNode;
-
 public class DoublyLinkedList<E> implements List<E> {
 
     private Node<E> head;
