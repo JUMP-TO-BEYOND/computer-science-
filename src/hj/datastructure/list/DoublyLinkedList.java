@@ -1,7 +1,7 @@
 package hj.datastructure.list;
 
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class DoublyLinkedList<E> implements List<E> {
 
@@ -9,14 +9,22 @@ public class DoublyLinkedList<E> implements List<E> {
     private Node<E> tail;
     private int size;
 
-    private static class Node<E>{
+    private static class Node<E> {
         private Node<E> previous;
         private Node<E> next;
         private E value;
 
-        Node(Node<E> previous, Node<E> next, E value){
+        // 2가지
+        // 생성자 주입 -> 무조건 넣어줘야한다. // 한 번만 할 수 있다.
+        // setter 주입 -> 내 맘대로 넣어준다. // 여러번 할 수 있다.
+
+        private Node(Node<E> previous, Node<E> next, E value) { // 생성자의 특징
             this.previous = previous;
             this.next = next;
+            this.value = value;
+        }
+
+        private Node(E value) {
             this.value = value;
         }
 
@@ -46,6 +54,7 @@ public class DoublyLinkedList<E> implements List<E> {
 
         @Override
         public String toString() {
+            // TODO 수정하기
             return String.valueOf(value);
         }
     }
@@ -57,27 +66,29 @@ public class DoublyLinkedList<E> implements List<E> {
 
     @Override
     public boolean isEmpty() {
-        if(head == null){
-            return true;
-        }
-        return false;
+//        if(head == null){
+//            return true;
+//        }
+//        return false;
+
+        return Objects.isNull(head);
     }
 
     @Override
     public boolean contains(Object o) {
+        // TODO 형변환, Object 제너릭 체크
         //list의 크기가 0일 때
-        if(head == null){
+        if (Objects.isNull(head)) {
             throw new EmptyStackException();
         }
 
-        int tmpIndex = 0;
         Node<E> searchNode = head;
-        while(tmpIndex <= size-1) {
-            if (searchNode.getValue().equals(o)) {
+        while (!Objects.isNull(searchNode.getNext())) {
+            // TODO 값으로 null 들어갈 때
+            if (Objects.equals(searchNode.getValue(), o)) {
                 return true;
             }
-            searchNode = searchNode.next;
-            tmpIndex++;
+            searchNode = searchNode.getNext();
         }
         return false;
     }
@@ -97,15 +108,15 @@ public class DoublyLinkedList<E> implements List<E> {
         return null;
     }
 
+    // TODO head, tail 더미로 쓰면???
+    // addFirst, addLast가 필요 없음
     @Override
     public boolean add(E e) {
         /* add : 마지막 인덱스에 더하기 */
 
         //size가 0이면 addFirst(e)
-        if(head == null){
+        if (head == null) {
             addFirst(e);
-            tail = head;
-            size++;
             return true;
         }
 
@@ -126,32 +137,51 @@ public class DoublyLinkedList<E> implements List<E> {
     }
     */
 
-    private void addFirst(E e) {
-        Node<E> newNode = new Node<>(null,head,e);
+    // head -> ?? (null, value)
+    // head = null -> head = value
+    // head // newHead -> head
+    // 20개 ~ 15줄 이내
+    private void addFirst(E e) { // SOLID -> 한 함수는 한가지의 일을 해야한다.
+        Node<E> newNode = new Node<>(e);
+
+        if (Objects.isNull(head)) {
+            head = newNode;
+            tail = head;
+            size++;
+            return;
+        }
+
+        newNode.setNext(head);
+        head.setPrevious(newNode);
         head = newNode;
+
+        size++;
     }
+
 
     // TODO: 2022-07-20 중복 데이터의 경우, 첫 번째 일치하는 data를 제거한다. 
     @Override
     public boolean remove(Object o) throws RuntimeException {
 
         //list의 크기가 0일 때
-        if(head == null){
+        if (isEmpty()) {
             throw new EmptyStackException();
         }
 
-        int tmpIndex = 0;
         Node<E> searchNode = head;
-        while(tmpIndex <= size-1){
-            if(searchNode.getValue().equals(o)){
+        int tmpIndex = 0;
+        while (tmpIndex <= size - 1) {
+            if (searchNode.getValue().equals(o)) {
                 //첫 노드 삭제인 경우
-                if(tmpIndex == 0){
+                // 메서드로 빼거나, 더미데이터를 이용하거나
+                // 들여쓰기 단계도 2까지만
+                if (tmpIndex == 0) {
                     removeFirst();
                     return true;
                 }
 
                 //마지막 노드 삭제인 경우
-                if(tmpIndex == size-1){
+                if (tmpIndex == size - 1) {
                     removeLast();
                     return true;
                 }
@@ -169,7 +199,7 @@ public class DoublyLinkedList<E> implements List<E> {
 
     private void removeLast() {
         //크기가 1인 경우
-        if(head.next == null){
+        if (head.next == null) {
             head = null;
             tail = null;
             size--;
@@ -183,16 +213,26 @@ public class DoublyLinkedList<E> implements List<E> {
         size--;
     }
 
-    private void removeFirst() {
+    private void removeFirst() { // SOLID 원칙 벗아니고 있습니다.
+        // 크기가 0일때
+        // 더미 써야한다.
+        // 추상화 수준을 높여라.
+//        if (size == 0) {
+        if (isEmpty()) {
+            throw new RuntimeException();
+        }
+
         //크기가 1인 경우
-        if(head.next == null){
+        if (size == 1) {
+            // reset();
             head = null;
             tail = null;
             size--;
             return;
         }
 
-        //크기가 1이상인 경우
+        //크기가 2이상인 경우
+        // removeFromHead();
         Node<E> nextNode = head.next;
         nextNode.previous = null;
         head = nextNode;
@@ -226,9 +266,6 @@ public class DoublyLinkedList<E> implements List<E> {
 
     @Override
     public void clear() {
-        if(head == null){
-            throw new EmptyStackException();
-        }
         head = null;
         tail = null;
         size = 0;
@@ -249,7 +286,7 @@ public class DoublyLinkedList<E> implements List<E> {
 
         validateIndex(index);
         //index == 0 (첫노드 삽입)
-        if(index == 0){
+        if (index == 0) {
             addFirst(element);
             size++;
             return;
@@ -257,7 +294,7 @@ public class DoublyLinkedList<E> implements List<E> {
 
         Node<E> tmpNode = getNode(index);
         Node<E> previousNode = tmpNode.previous;
-        Node<E> newNode = new Node<>(previousNode,tmpNode,element);
+        Node<E> newNode = new Node<>(previousNode, tmpNode, element);
         tmpNode.previous = newNode;
         previousNode.next = newNode;
         size++;
@@ -268,10 +305,10 @@ public class DoublyLinkedList<E> implements List<E> {
         validateIndex(index);
 
         //인덱스가 리스트 크기의 절반보다 작으면 head부터 탐색
-        if(index < size/2){
+        if (index < size / 2) {
             Node<E> selectedNode = head;
             int count = 0;
-            while(index > count){
+            while (index > count) {
                 selectedNode = selectedNode.next;
                 count++;
             }
@@ -280,44 +317,41 @@ public class DoublyLinkedList<E> implements List<E> {
 
         //인덱스가 리스트 크기의 절반보다 크면 tail부터 탐색
         Node<E> selectedNode = tail;
-        int count = size-1;
-        while(index < count){
+        int count = size - 1; // TODO count 변수명 수정
+        while (index < count) {
             selectedNode = selectedNode.previous;
             count--;
         }
         return selectedNode;
-
-
     }
 
-    private void validateIndex(int index) throws RuntimeException{
-        //index validation
-        //0 <= index < size
-        if(!(0 <= index && index < size)) {
+    private void validateIndex(int index) {
+        if (!(0 <= index && index < size)) {
             throw new IndexOutOfBoundsException();
         }
     }
 
+    // TODO removeFirst(), removeLast() 리턴값을 E로 바꿔준다.
+    // 이유 생각해보기
     @Override
     public E remove(int index) {
         validateIndex(index);
-        E removeData = null;
         //첫 노드 삭제인 경우
-        if(index == 0){
-            removeData = head.getValue();
+        if (index == 0) {
+            E removeData = head.getValue();
             removeFirst();
             return removeData;
         }
 
         //마지막 노드 삭제인 경우
-        if(index == size-1){
-            removeData = tail.getValue();
+        if (index == size - 1) {
+            E removeData = tail.getValue();
             removeLast();
             return removeData;
         }
 
         Node<E> searchNode = getNode(index);
-        removeData = searchNode.getValue();
+        E removeData = searchNode.getValue();
         searchNode.previous.setNext(searchNode.next);
         searchNode.next.setPrevious(searchNode.previous);
         size--;
@@ -353,8 +387,8 @@ public class DoublyLinkedList<E> implements List<E> {
     public String toString() {
         String str = "[";
         Node<E> currentNode = head;
-        for(int i = 0; i < size; i++){
-            if(i == size - 1){
+        for (int i = 0; i < size; i++) {
+            if (i == size - 1) {
                 str += currentNode.getValue();
                 str += "]";
                 return str;
