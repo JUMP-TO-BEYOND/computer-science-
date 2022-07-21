@@ -1,5 +1,6 @@
 package hj.datastructure.list;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.*;
 
@@ -13,16 +14,6 @@ public class DoublyLinkedList<E> implements List<E> {
         private Node<E> previous;
         private Node<E> next;
         private E value;
-
-        // 2가지
-        // 생성자 주입 -> 무조건 넣어줘야한다. // 한 번만 할 수 있다.
-        // setter 주입 -> 내 맘대로 넣어준다. // 여러번 할 수 있다.
-
-        private Node(Node<E> previous, Node<E> next, E value) { // 생성자의 특징
-            this.previous = previous;
-            this.next = next;
-            this.value = value;
-        }
 
         private Node(E value) {
             this.value = value;
@@ -51,12 +42,6 @@ public class DoublyLinkedList<E> implements List<E> {
         public void setValue(E value) {
             this.value = value;
         }
-
-        @Override
-        public String toString() {
-            // TODO 수정하기
-            return String.valueOf(value);
-        }
     }
 
     @Override
@@ -66,19 +51,15 @@ public class DoublyLinkedList<E> implements List<E> {
 
     @Override
     public boolean isEmpty() {
-//        if(head == null){
-//            return true;
-//        }
-//        return false;
-
         return Objects.isNull(head);
     }
 
     @Override
     public boolean contains(Object o) {
         // TODO 형변환, Object 제너릭 체크
+
         //list의 크기가 0일 때
-        if (Objects.isNull(head)) {
+        if (isEmpty()) {
             throw new EmptyStackException();
         }
 
@@ -115,13 +96,15 @@ public class DoublyLinkedList<E> implements List<E> {
         /* add : 마지막 인덱스에 더하기 */
 
         //size가 0이면 addFirst(e)
-        if (head == null) {
+        if (isEmpty()) {
             addFirst(e);
             return true;
         }
 
         //size가 0이 아니면 마지막 노드에 추가
-        Node<E> newNode = new Node<>(tail, null, e);
+        Node<E> newNode = new Node<>(e);
+        newNode.setPrevious(tail);
+        newNode.setNext(null);
         tail.next = newNode;
         tail = newNode;
         size++;
@@ -294,7 +277,9 @@ public class DoublyLinkedList<E> implements List<E> {
 
         Node<E> tmpNode = getNode(index);
         Node<E> previousNode = tmpNode.previous;
-        Node<E> newNode = new Node<>(previousNode, tmpNode, element);
+        Node<E> newNode = new Node<>(element);
+        newNode.setPrevious(previousNode);
+        newNode.setNext(tmpNode);
         tmpNode.previous = newNode;
         previousNode.next = newNode;
         size++;
@@ -385,18 +370,18 @@ public class DoublyLinkedList<E> implements List<E> {
 
     @Override
     public String toString() {
-        String str = "[";
+        StringBuilder str = new StringBuilder();
+        str.append("[");
         Node<E> currentNode = head;
-        for (int i = 0; i < size; i++) {
-            if (i == size - 1) {
-                str += currentNode.getValue();
-                str += "]";
-                return str;
-            }
-            str += currentNode.getValue() + " , ";
+        while (currentNode != null) {
+            str.append(currentNode.getValue()).append(",");
             currentNode = currentNode.getNext();
+            if(currentNode == null){
+                str.deleteCharAt(str.lastIndexOf(","));
+                break;
+            }
         }
-        str += "]";
-        return str;
+        str.append("]");
+        return str.toString();
     }
 }
