@@ -1,11 +1,16 @@
 package yk.datastructure.map;
 
-public interface MyMap<String, E> {
-    public void put(String key, E value);
-    public Object get(String key);
-    public boolean remove(String key);
-    public void replace(String key, E value);
-    public boolean contains(String key);
-    public void clear();
-    public boolean empty();
+public interface MyMap<K, E> { //실제 데이터가 아닌 임시 타입 이름 (명시적)
+    // 인터페이스 접근제어자 불필요
+    void put(K key, E value);
+
+    E get(K key); // E 반환
+
+    boolean remove(K key);
+
+    boolean contains(K key);
+
+    void clear();
+
+    boolean isEmpty();
 }
