@@ -2,22 +2,28 @@ package hj.datastructure.map;
 
 import java.util.*;
 
-public class HashMap<K, V> implements Map<K,V> {
-    private static final int DEFAULT_NODE_SIZE = 100;
+public class HashMap<K, V> implements Map<K, V> {
+    private static final int DEFAULT_HASHTABLE_SIZE = 100;
+
+    private static int tableSize = DEFAULT_HASHTABLE_SIZE;
     private int size = 0;
-    private Node[] hashTable = new Node[DEFAULT_NODE_SIZE];
+    private Node<K, V>[] hashTable = new Node[tableSize];
 
     public HashMap() {
-        Arrays.fill(hashTable, new Node(null,null));
+        for(int i = 0; i < hashTable.length; i ++){
+            hashTable[i] = new Node<> ();
+        }
     }
 
-
-    private static class Node<K, V> implements Entry<K, V>{
+    private static class Node<K, V> implements Entry<K, V> {
         private K key;
         private V value;
-        private Node<K,V> next;
+        private Node<K, V> next;
 
-        public Node(K key, V value){
+        public Node() {
+        }
+
+        public Node(K key, V value) {
             this.key = key;
             this.value = value;
         }
@@ -46,9 +52,8 @@ public class HashMap<K, V> implements Map<K,V> {
 
     }
 
-
-    private int getIndexForKey(Object key){
-        return Objects.hashCode(key)%100;
+    private static int getHashKey(Object key) {
+        return Math.abs(Objects.hashCode(key)) % tableSize;
     }
 
     @Override
@@ -63,7 +68,7 @@ public class HashMap<K, V> implements Map<K,V> {
 
     @Override
     public boolean containsKey(Object key) {
-        return Objects.nonNull(getBucket(key));
+        return isExistedBucket(getBucket(key));
     }
 
     private boolean hasNotKey(Object key) {
@@ -72,10 +77,10 @@ public class HashMap<K, V> implements Map<K,V> {
 
     @Override
     public boolean containsValue(Object value) {
-        if(isEmpty()){
+        if (isEmpty()) {
             return false;
         }
-        for(Node<K, V> dummyBucket : hashTable){
+        for (Node<K, V> dummyBucket : hashTable) {
             if (isExistedValue(value, dummyBucket.getNext())) {
                 return true;
             }
@@ -84,8 +89,8 @@ public class HashMap<K, V> implements Map<K,V> {
     }
 
     private boolean isExistedValue(Object value, Node<K, V> bucket) {
-        while(Objects.nonNull(bucket)){
-            if(bucket.getValue().equals(value)){
+        while (Objects.nonNull(bucket)) {
+            if (bucket.getValue().equals(value)) {
                 return true;
             }
             bucket = bucket.getNext();
@@ -95,30 +100,30 @@ public class HashMap<K, V> implements Map<K,V> {
 
     @Override
     public V get(Object key) {
-        Node<K,V> bucketForKey = getBucket(key);
-        if(isEmptyBucket(bucketForKey)){
+        Node<K, V> bucketForKey = getBucket(key);
+        if (isEmptyBucket(bucketForKey)) {
             return null;
         }
         return bucketForKey.getValue();
     }
 
-    private Node<K,V> getBucket(Object key) {
-        if(isEmpty()){
+    private Node<K, V> getBucket(Object key) {
+        if (isEmpty()) {
             return null;
         }
-        int index = getIndexForKey(key);
+        int index = getHashKey(key);
         Node<K, V> bucket = hashTable[index].getNext();
 
-        return extractBucketForKey(key,bucket);
+        return extractBucketForKey(key, bucket);
     }
 
-    private Node<K,V> extractBucketForKey(Object key, Node<K,V> bucket) {
-        if(isEmptyBucket(bucket)){
+    private Node<K, V> extractBucketForKey(Object key, Node<K, V> bucket) {
+        if (isEmptyBucket(bucket)) {
             return null;
         }
 
-        while(isExistedBucket(bucket)){
-            if(key.equals(bucket.getKey())){
+        while (isExistedBucket(bucket)) {
+            if (key.equals(bucket.getKey())) {
                 return bucket;
             }
             bucket = bucket.getNext();
@@ -130,45 +135,40 @@ public class HashMap<K, V> implements Map<K,V> {
         return Objects.isNull(bucket);
     }
 
-    private boolean isExistedBucket(Node<K,V> bucket) {
+    private boolean isExistedBucket(Node<K, V> bucket) {
         return Objects.nonNull(bucket);
     }
 
     @Override
     public V put(K key, V value) {
-        int index = getIndexForKey(key);
-
         Node<K, V> bucket = getBucket(key);
-        if(isExistedBucket(bucket)){
+        if (isExistedBucket(bucket)) {
             return bucket.setValue(value);
         }
 
+        int index = getHashKey(key);
         Node<K, V> currentBucket = hashTable[index];
-        Node<K, V> newBucket = new Node<>(key,value);
+        Node<K, V> newBucket = new Node<>(key, value);
         newBucket.setNext(currentBucket.getNext());
         currentBucket.setNext(newBucket);
         size++;
         return value;
     }
 
-    private boolean hasNextBucket(Node<K, V> bucket) {
-        return Objects.nonNull(bucket.getNext());
-    }
-
     @Override
     public V remove(Object key) {
-        if(isEmpty()){
+        if (isEmpty()) {
             return null;
         }
-        if(hasNotKey(key)){
+        if (hasNotKey(key)) {
             return null;
         }
 
-        int index = getIndexForKey(key);
+        int index = getHashKey(key);
         Node<K, V> previousBucket = hashTable[index];
         Node<K, V> bucket = hashTable[index].getNext();
-        while(isExistedBucket(bucket)){
-            if(key.equals(bucket.getKey())){
+        while (isExistedBucket(bucket)) {
+            if (key.equals(bucket.getKey())) {
                 previousBucket.setNext(bucket.getNext());
                 size--;
                 return bucket.getValue();
@@ -186,20 +186,22 @@ public class HashMap<K, V> implements Map<K,V> {
 
     @Override
     public void clear() {
-        Arrays.fill(hashTable,new Node(null,null));
+        for(int i = 1; i < hashTable.length; i ++){
+            hashTable[i] = new Node<K, V> ();
+        }
         size = 0;
     }
 
     @Override
     public Set<K> keySet() {
-        if(isEmpty()){
+        if (isEmpty()) {
             return null;
         }
 
         Set<K> keySet = new HashSet<>();
-        for(Node<K, V> dummyBucket : hashTable){
+        for (Node<K, V> dummyBucket : hashTable) {
             Node<K, V> bucket = dummyBucket.getNext();
-            while(Objects.nonNull(bucket)){
+            while (isExistedBucket(bucket)) {
                 keySet.add(bucket.getKey());
                 bucket = bucket.getNext();
             }
@@ -209,31 +211,31 @@ public class HashMap<K, V> implements Map<K,V> {
 
     @Override
     public Collection<V> values() {
-        if(isEmpty()){
+        if (isEmpty()) {
             return null;
         }
 
-        Collection<V> valuesList = new LinkedList<V>();
-        for(Node<K, V> dummyBucket : hashTable){
+        Collection<V> values = new LinkedList<V>();
+        for (Node<K, V> dummyBucket : hashTable) {
             Node<K, V> bucket = dummyBucket.getNext();
-            while(Objects.nonNull(bucket)){
-                valuesList.add(bucket.getValue());
+            while (isExistedBucket(bucket)) {
+                values.add(bucket.getValue());
                 bucket = bucket.getNext();
             }
         }
-        return valuesList;
+        return values;
     }
 
     @Override
     public Set<Entry<K, V>> entrySet() {
-        if(isEmpty()){
+        if (isEmpty()) {
             return null;
         }
 
         Set<Entry<K, V>> entrySet = new HashSet<>();
-        for(Node<K, V> bucket : hashTable){
-            while(Objects.nonNull(bucket)){
-                entrySet.add((Entry<K, V>)bucket);
+        for (Node<K, V> bucket : hashTable) {
+            while (isExistedBucket(bucket)) {
+                entrySet.add(bucket);
                 bucket = bucket.getNext();
             }
         }

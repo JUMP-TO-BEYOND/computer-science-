@@ -56,5 +56,12 @@ public class HashMapTest {
         System.out.println(testMap.size());
 
 
+        Map<String, String> testMap2 = new java.util.HashMap<>();
+        testMap2.put("test1","empty map test");
+        testMap2.put("test1","empty map test2");
+        System.out.println(testMap.get("test1"));
+
+
+
     }
 }
